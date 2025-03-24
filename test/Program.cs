@@ -46,34 +46,47 @@ namespace RC5Algorithm
 
         public uint[] MaHoa(uint[] P)
         {
-            uint A = P[0] + S[0];
-            uint B = P[1] + S[1];
-
-            for (int i = 1; i <= r; i++)
+            uint[] result = new uint[P.Length];
+            for (int i = 0; i < P.Length; i += 2) // Xử lý từng 2 khối một lúc
             {
-                A = DichTrai(A ^ B, (int)B) + S[2 * i];
-                B = DichTrai(B ^ A, (int)A) + S[2 * i + 1];
-            }
+                uint A = P[i] + S[0];
+                uint B = P[i + 1] + S[1];
 
-            return new uint[] { A, B };
+                for (int j = 1; j <= r; j++)
+                {
+                    A = DichTrai(A ^ B, (int)B) + S[2 * j];
+                    B = DichTrai(B ^ A, (int)A) + S[2 * j + 1];
+                }
+
+                result[i] = A;
+                result[i + 1] = B;
+            }
+            return result;
         }
 
         public uint[] GiaiMa(uint[] cipherText)
         {
-            uint A = cipherText[0];
-            uint B = cipherText[1];
-
-            for (int i = r; i > 0; i--)
+            uint[] result = new uint[cipherText.Length];
+            for (int i = 0; i < cipherText.Length; i += 2) // Xử lý từng 2 khối một lúc
             {
-                B = DichPhai(B - S[2 * i + 1], (int)A) ^ A;
-                A = DichPhai(A - S[2 * i], (int)B) ^ B;
+                uint A = cipherText[i];
+                uint B = cipherText[i + 1];
+
+                for (int j = r; j > 0; j--)
+                {
+                    B = DichPhai(B - S[2 * j + 1], (int)A) ^ A;
+                    A = DichPhai(A - S[2 * j], (int)B) ^ B;
+                }
+
+                A -= S[0];
+                B -= S[1];
+
+                result[i] = A;
+                result[i + 1] = B;
             }
-
-            A -= S[0];
-            B -= S[1];
-
-            return new uint[] { A, B };
+            return result;
         }
+
 
         private uint DichTrai(uint value, int shift) => (value << shift) | (value >> (w - shift));
         private uint DichPhai(uint value, int shift) => (value >> shift) | (value << (w - shift));
@@ -109,20 +122,23 @@ namespace RC5Algorithm
         static void Main(string[] args)
         {
             Console.OutputEncoding = Encoding.UTF8;
-            byte[] K = Encoding.ASCII.GetBytes("abc");
+            byte[] K = Encoding.ASCII.GetBytes("ThayThinhdeptrai");
             RC5 rc5 = new RC5(K);
 
             string banRo = "tiendeptraikhoaito";
-            Console.WriteLine("Bản rõ: " + banRo);
+            // Bổ sung chuỗi để đảm bảo độ dài là bội số của 8 byte
+            while (banRo.Length % 8 != 0)
+                banRo += " ";
 
             uint[] banRoUint = ChuyenChuoiThanhUint(banRo);
             uint[] maHoaed = rc5.MaHoa(banRoUint);
             uint[] giaiMaed = rc5.GiaiMa(maHoaed);
 
             string banGiaiMa = ChuyenUintThanhChuoi(giaiMaed);
-
+            Console.WriteLine("Bản rõ"+banRo);
             Console.WriteLine("Mã hóa: " + string.Join(" ", maHoaed.Select(x => x.ToString("X8"))));
             Console.WriteLine("Giải mã: " + banGiaiMa);
+
 
             Console.ReadKey();
         }

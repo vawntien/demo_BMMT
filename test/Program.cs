@@ -6,7 +6,7 @@ using System.Linq;
 class RC5FileEncryption
 {
     const int W = 32;
-    const int R = 2;
+    const int R = 12;
     const uint P = 0xB7E15163;
     const uint Q = 0x9E3779B9;
 
@@ -20,7 +20,7 @@ class RC5FileEncryption
 
     static void MoRongKhoaK(byte[] key, uint[] S)
     {
-        Console.WriteLine("Mở rộng khóa K: ");
+        Console.WriteLine("MỞ RỘNG KHÓA K: ");
         int b = key.Length, c = (b + 3) / 4;
         uint[] L = new uint[c];
 
@@ -34,8 +34,9 @@ class RC5FileEncryption
         {
             Console.WriteLine($"Mảng L: {NP(l)}");
         }
+        Console.WriteLine();
 
-        Console.WriteLine("Khởi tạo khóa phụ S");
+        Console.WriteLine("KHỞI TẠO KHÓA PHỤ S");
 
         S[0] = P;
         Console.WriteLine($"Khóa phụ S[0] : {NP(S[0])}");
@@ -45,8 +46,9 @@ class RC5FileEncryption
             S[i] = S[i - 1] + Q;
             Console.WriteLine($"Khóa phụ S[{i}] : {NP(S[i])}");
         }
+        Console.WriteLine();
 
-        Console.WriteLine("Trộn khóa phụ S với mảng L");
+        Console.WriteLine("TRỘN KHÓA PHỤ S VỚI MẢNG L");
 
         uint A = 0, B = 0;
         int iIdx = 0, jIdx = 0;
@@ -63,28 +65,36 @@ class RC5FileEncryption
 
     static void MaHoaKhoi(uint[] S, ref uint A, ref uint B)
     {
+        Console.WriteLine("MÃ HÓA TỪNG KHỐI: ");
         A += S[0]; B += S[1];
-        //Console.WriteLine("Khối A lần 1   :"+NP(A));
-        //Console.WriteLine("Khối B lần 1   :"+NP(B));
+        Console.WriteLine("Khối A sau vòng 0   :" + NP(A));
+        Console.WriteLine("Khối B sau vòng 0   :" + NP(B));
         for (int i = 1; i <= R; i++)
         {
             A = RotL(A ^ B, (int)B) + S[2 * i];
             B = RotL(B ^ A, (int)A) + S[2 * i + 1];
-            Console.WriteLine("Khối A sau vòng "+ i +"   :"+NP(A));
+            Console.WriteLine("Khối A sau vòng " + i + "   :" + NP(A));
             Console.WriteLine("Khối B sau vòng " + i + "   :" + NP(B));
             //Console.WriteLine($"Khoi A sau vong {0}: {1}", i, NP(A));
             //Console.WriteLine($"Khoi B sau vong {0}: {1}", i, NP(B));
         }
+        Console.WriteLine();
     }
 
     static void GiaiMaTungKhoi(uint[] S, ref uint A, ref uint B)
     {
+        Console.WriteLine("GIẢI MÃ TỪNG KHỐI: ");
         for (int i = R; i > 0; i--)
         {
             B = RotR(B - S[2 * i + 1], (int)A) ^ A;
             A = RotR(A - S[2 * i], (int)B) ^ B;
+            Console.WriteLine("Khối B sau vòng giải" + i + "   :" + NP(A));
+            Console.WriteLine("Khối A sau vòng giải" + i + "   :" + NP(B));
         }
         B -= S[1]; A -= S[0];
+        Console.WriteLine("Khối B sau vòng giải 0   :" + NP(A));
+        Console.WriteLine("Khối A sau vòng giải 0   :" + NP(B));
+        Console.WriteLine();
     }
 
     static void MaHoaFileTXT(string inputPath, string outputPath, uint[] S)
@@ -149,12 +159,14 @@ class RC5FileEncryption
     {
         Console.OutputEncoding = Encoding.UTF8;
         Console.InputEncoding = Encoding.UTF8;
-        string DauVao = @"E:\LuuDuLieuSinhVien\001_vawntien\BMMT\bmmt\data\testMH.txt";
-        string FileBanMa = @"E:\LuuDuLieuSinhVien\001_vawntien\BMMT\bmmt\data\BanMa.txt";
-        string FileBanRo = @"E:\LuuDuLieuSinhVien\001_vawntien\BMMT\bmmt\data\BanRo.txt";
+        string DauVao = @"D:\Bao_mat\RC5_MaHoafileTXT\RC5_MaHoa_TXT\BanGoc.txt";
+        string FileBanMa = @"D:\Bao_mat\RC5_MaHoafileTXT\RC5_MaHoa_TXT\BanMa_MH.txt";
+        string FileBanRo = @"D:\Bao_mat\RC5_MaHoafileTXT\RC5_MaHoa_TXT\BanRo.txt";
 
-        byte[] key = Encoding.UTF8.GetBytes("Tiendeptraiso1TG");
+        byte[] key = Encoding.UTF8.GetBytes("nguoilaidosongda");
+        
         uint[] S = new uint[2 * (R + 1)];
+        
         MoRongKhoaK(key, S);
 
         MaHoaFileTXT(DauVao, FileBanMa, S);

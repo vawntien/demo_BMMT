@@ -5,8 +5,8 @@ using System.Linq;
 
 class RC5FileEncryption
 {
-    const int W = 32;  
-    const int R = 12;  
+    const int W = 32;
+    const int R = 2;
     const uint P = 0xB7E15163;
     const uint Q = 0x9E3779B9;
 
@@ -20,27 +20,33 @@ class RC5FileEncryption
 
     static void MoRongKhoaK(byte[] key, uint[] S)
     {
-        Console.WriteLine("Mo rong khoa K: ");
+        Console.WriteLine("Mở rộng khóa K: ");
         int b = key.Length, c = (b + 3) / 4;
         uint[] L = new uint[c];
 
         for (int i = b - 1; i >= 0; i--)
         {
             L[i / 4] = (L[i / 4] << 8) + key[i];
-            
+
         }
 
         foreach (uint l in L)
         {
-            Console.WriteLine($"Mang L: {NP(l)}");
+            Console.WriteLine($"Mảng L: {NP(l)}");
         }
 
+        Console.WriteLine("Khởi tạo khóa phụ S");
+
         S[0] = P;
+        Console.WriteLine($"Khóa phụ S[0] : {NP(S[0])}");
+
         for (int i = 1; i < 2 * (R + 1); i++)
         {
             S[i] = S[i - 1] + Q;
-            Console.WriteLine($"Khoa phu S[{i}] : {NP(S[i])}");
+            Console.WriteLine($"Khóa phụ S[{i}] : {NP(S[i])}");
         }
+
+        Console.WriteLine("Trộn khóa phụ S với mảng L");
 
         uint A = 0, B = 0;
         int iIdx = 0, jIdx = 0;
@@ -51,19 +57,23 @@ class RC5FileEncryption
             B = L[jIdx] = RotL(L[jIdx] + A + B, (int)(A + B));
             iIdx = (iIdx + 1) % (2 * (R + 1));
             jIdx = (jIdx + 1) % c;
-            //Console.WriteLine("Tron khoa phu S[{0}] voi L[{0}]",iIdx);
+            //Console.WriteLine($"Trộn khóa phụ S[{0}] với L[{0}]",iIdx);
         }
     }
 
     static void MaHoaKhoi(uint[] S, ref uint A, ref uint B)
     {
         A += S[0]; B += S[1];
+        //Console.WriteLine("Khối A lần 1   :"+NP(A));
+        //Console.WriteLine("Khối B lần 1   :"+NP(B));
         for (int i = 1; i <= R; i++)
         {
             A = RotL(A ^ B, (int)B) + S[2 * i];
             B = RotL(B ^ A, (int)A) + S[2 * i + 1];
-            //Console.WriteLine("Khoi A sau vong {0}: {1}",i, A);
-           // Console.WriteLine("Khoi B sau vong {0}: {1}", i, B);
+            Console.WriteLine("Khối A sau vòng "+ i +"   :"+NP(A));
+            Console.WriteLine("Khối B sau vòng " + i + "   :" + NP(B));
+            //Console.WriteLine($"Khoi A sau vong {0}: {1}", i, NP(A));
+            //Console.WriteLine($"Khoi B sau vong {0}: {1}", i, NP(B));
         }
     }
 
@@ -108,7 +118,7 @@ class RC5FileEncryption
         //}
 
         //byte[] data = File.ReadAllBytes(@"data\BanMa.txt");
-        
+
         Console.WriteLine(BitConverter.ToString(data));
 
 
@@ -139,9 +149,9 @@ class RC5FileEncryption
     {
         Console.OutputEncoding = Encoding.UTF8;
         Console.InputEncoding = Encoding.UTF8;
-        string DauVao = @"data\testMH.txt";
-        string FileBanMa = @"data\BanMa.txt";
-        string FileBanRo = @"data\BanRo.txt";
+        string DauVao = @"E:\LuuDuLieuSinhVien\001_vawntien\BMMT\bmmt\data\testMH.txt";
+        string FileBanMa = @"E:\LuuDuLieuSinhVien\001_vawntien\BMMT\bmmt\data\BanMa.txt";
+        string FileBanRo = @"E:\LuuDuLieuSinhVien\001_vawntien\BMMT\bmmt\data\BanRo.txt";
 
         byte[] key = Encoding.UTF8.GetBytes("Tiendeptraiso1TG");
         uint[] S = new uint[2 * (R + 1)];
